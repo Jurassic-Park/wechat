@@ -1,6 +1,7 @@
 package officialaccount
 
 import (
+	"github.com/silenceper/wechat/v2/officialaccount/kf"
 	"net/http"
 
 	"github.com/silenceper/wechat/v2/officialaccount/datacube"
@@ -112,4 +113,14 @@ func (officialAccount *OfficialAccount) GetBroadcast() *broadcast.Broadcast {
 //GetDataCube 数据统计
 func (officialAccount *OfficialAccount) GetDataCube() *datacube.DataCube {
 	return datacube.NewCube(officialAccount.ctx)
+}
+
+// 客服
+func (officialAccount *OfficialAccount) GetKf() *kf.Kf {
+	return kf.NewKf(officialAccount.ctx)
+}
+
+// 聊天记录
+func (officialAccount *OfficialAccount) GetMsgRecord() *kf.MsgRecord {
+	return kf.NewMsgRecord(officialAccount.ctx)
 }
