@@ -3,6 +3,7 @@ package util
 import (
 	"bytes"
 	"crypto/tls"
+	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
 	"encoding/xml"
@@ -106,12 +107,29 @@ func PostFile(fieldname, filename, uri string) ([]byte, error) {
 	return PostMultipartForm(fields, uri)
 }
 
+//PostFileByBase64 上传文件
+func PostFileByBase64(fieldname, filename, base64File, uri string) ([]byte, error) {
+
+	fileByte, _ := base64.StdEncoding.DecodeString(base64File)
+
+	fields := []MultipartFormField{
+		{
+			IsBase64File: true,
+			Fieldname:    fieldname,
+			Filename:     filename,
+			Value:        fileByte,
+		},
+	}
+	return PostMultipartForm(fields, uri)
+}
+
 //MultipartFormField 保存文件或其他字段信息
 type MultipartFormField struct {
-	IsFile    bool
-	Fieldname string
-	Value     []byte
-	Filename  string
+	IsFile       bool
+	IsBase64File bool
+	Fieldname    string
+	Value        []byte
+	Filename     string
 }
 
 //PostMultipartForm 上传文件或其他多个字段
@@ -135,6 +153,17 @@ func PostMultipartForm(fields []MultipartFormField, uri string) (respBody []byte
 			defer fh.Close()
 
 			if _, err = io.Copy(fileWriter, fh); err != nil {
+				return
+			}
+		} else if field.IsBase64File {
+
+			fileWriter, e := bodyWriter.CreateFormFile(field.Fieldname, field.Filename)
+			if e != nil {
+				err = fmt.Errorf("error writing to buffer , err=%v", e)
+				return
+			}
+
+			if _, err = fileWriter.Write(field.Value); err != nil {
 				return
 			}
 		} else {
